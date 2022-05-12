@@ -36,7 +36,7 @@
                 return parent.appendChild(el)
             }
 
-            const api = 'http://localhost:8000/api'
+            const api = 'http://localhost:8000'
 
             const root = document.getElementById('root')
             const nav_cat = document.getElementById('nav_cat')
@@ -52,26 +52,61 @@
             }
 
             //Création nav avec catégories
-
-
-                fetch(api + '/categories')
-
+                fetch(api + '/api/categories')
                 .then (response => {
-                    console.log('Response = ' , response)
                     return response.json()
                 })
-
                 .then (data => {
                     console.log('Data = ' , data)
                     let categories = data['hydra:member']
-                    console.log('Categorie = ' , categories)
                     return categories.map(function (categorie) {
-                        console.log('Categorie = ' , categorie)
 
-                        let button = createNode('button')
-                        append(nav_cat, button)
-                        button.innerHTML = `${categorie.name}`
+                        let a = createNode('a')
+                        append(nav_cat, a)
+                        a.innerHTML = `${categorie.name}`
+                        a.href = api + `/api/categories/${categorie.id}`
+                        a.classList.add('btn', 'btn-primary', 'm-1')
+                        a.addEventListener('click', function(event) {
+                            loader.style.display = 'block'
+                            event.preventDefault()
 
+                            fetch(a.href)
+                            .then (response => {
+                                return response.json()
+                            })
+                            .then (data => {
+                                console.log('Data = ' , data)
+                                root.innerHTML = ""
+                                h2 = createNode('h2')
+                                append(root, h2)
+                                h2.innerHTML = `Catégorie = ${categorie.name}`                                
+                                data.posts.map(function (post) {
+                                    console.log('Post = ' , post)
+
+                                    fetch(api + post)
+                                    .then (response => {
+                                        return response.json()
+                                    })
+                                    .then (post => {
+                                            console.log('Post = ' , data)
+                                            let h3 = createNode('h3')
+                                            append(root, h3)
+                                            h3.innerHTML = `${post.title}`
+                                            let div = createNode('div')
+                                            append(root, div)
+                                            div.innerHTML = `${post.createdAt}`
+                                            let img = createNode('img')
+                                            append(root, img)
+                                            img.src = `${post.image}`
+                                            div = createNode('div')
+                                            append(root, div)
+                                            div.innerHTML = `${post.content}`
+
+                                    })                                                                     
+                               })
+                               loader.style.display = 'none'
+                            })
+                        })
                     })
                 })
 
@@ -82,7 +117,7 @@
                 loader.style.display = 'block'
                 
 
-                fetch(api + '/posts')
+                fetch(api + '/api/posts')
 
                 .then (response => {
                     console.log('Response = ' , response)
@@ -114,7 +149,7 @@
 
                         div = createNode('div')
                         append(root, div)
-                        div.innerHTML = `${post.content}`
+                        div.innerHTML = `${post.content.substring(0, 1000)}...`
 
                         loader.style.display = 'none'
                     })
@@ -129,7 +164,7 @@
                 loader.style.display = 'block'
 
 
-                fetch(api + '/categories')
+                fetch(api + '/api/categories')
 
                 .then (response => {
                     console.log('Response = ' , response)
@@ -168,7 +203,7 @@
                 const token = localStorage.getItem('token')
                 console.log('Token = ', token)
 
-                fetch(api + '/users', {
+                fetch(api + '/api/users', {
                     headers: {
                         'Content-Type': 'application/json',
                         'authorization': 'Bearer ' + token
@@ -208,7 +243,7 @@
                 const email = prompt("Email")
                 const password = prompt("Password")
 
-                fetch(api + '/login_check', {
+                fetch(api + '/api/login_check', {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
